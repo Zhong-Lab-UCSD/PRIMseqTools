@@ -1,0 +1,196 @@
+#!/bin/bash
+
+helpFunction()
+{
+   echo ""
+   echo "Usage: PRIMSeqTools"
+   echo -e "\t-a String, Path to read1 fastq file, required"
+   echo -e "\t-b String, Path to read2 fastq file, required"
+   echo -e "\t-o String, Path to output directory, required"
+   echo -e "\t-i String, Path to bwa index of target transcriptome, required"
+   echo -e "\t-g String, Path to transcript,gene and gene type dictionary file in csv format, required" 
+   echo -e "\t-j String, Job ID to be prepended to the output files and directories, optional, default=PRIMseq"
+   echo -e "\t-t Int, Number of working threads, optional, default=4"
+   echo -e "\t-r Char (T or F), remove intermediate files or not, optional, default=T"
+   echo -e "\t-p Float, false discovery rate used to identify RNA-protein associations, optional, default=0.05"
+   echo -e "\t-d Float, odds ratio cutoff used to identify RNA-protein associations, optional, default=1"
+   echo -e "\t-c Float, read count cutoff coefficient used to identify RNA-protein associations, optional, default=4"   
+   echo -e "\t-h Print usage message" 
+   echo 
+   exit 1 # Exit script after printing help
+}
+
+while getopts "a:b:t:o:i:h:r:p:d:c:g:j:" opt
+do
+   case "$opt" in
+      a ) read1="$OPTARG" ;;
+      b ) read2="$OPTARG" ;;
+      t ) numT="$OPTARG" ;;
+      o ) outputDir="$OPTARG" ;;
+      i ) bwaIndex="$OPTARG" ;;
+      r ) removeFlag="$OPTARG" ;;
+      p ) pCutoff="$OPTARG" ;;
+      d ) oddsCutoff="$OPTARG" ;;
+      c ) rcCutoff="$OPTARG" ;;
+      g ) geneDic="$OPTARG" ;;
+      j ) jobId="$OPTARG" ;;
+      h ) helpFunction ;;
+      ? ) helpFunction ;; # Print helpFunction in case parameter is non-existent
+   esac
+done
+
+# Print helpFunction in case parameters are empty
+if [ -z "$read1" ] || [ -z "$read2" ]
+then
+   echo "read1 or read2 missing";
+   helpFunction
+fi
+
+if [ -z "$bwaIndex" ]
+then
+   echo "bwa index file missing";
+   helpFunction
+fi
+
+if [ -z "$outputDir" ]
+then
+   echo "ouput directory missing";
+   helpFunction
+fi
+
+if [ -z "$geneDic" ]
+then
+   echo "transcript gene dictionary file missing";
+   helpFunction
+fi
+
+if [ -z "$numT" ]
+then
+    numT=4
+fi
+wait
+
+if [ -z "$removeFlag" ]
+then
+    removeFlag='T'
+fi
+wait
+if [ -z "$pCutoff" ]
+then
+    pCutoff=0.05
+fi
+wait
+if [ -z "$oddsCutoff" ]
+then
+    oddsCutoff=1
+fi
+wait
+if [ -z "$rcCutoff" ]
+then
+    rcCutoff=4
+fi
+wait
+
+if [ ! -z "$jobId" ]
+then
+    jobId=${jobId}_
+else
+    jobId=PRIMseq_
+fi
+wait
+
+
+mkdir $outputDir
+mkdir $outputDir/${jobId}processedFastq
+mkdir $outputDir/${jobId}intermediateFiles
+mkdir $outputDir/${jobId}alignment/
+wait
+
+python getCurrentDateTime.py $outputDir $jobId
+wait
+
+
+cat $outputDir/${jobId}intermediateFiles/runStart.txt > $outputDir/${jobId}RNAProteinInteractions.csv
+cat $outputDir/${jobId}intermediateFiles/runStart.txt > $outputDir/${jobId}errorLog.txt
+cat $outputDir/${jobId}intermediateFiles/runStart.txt > $outputDir/${jobId}chimericReadPairs.csv
+cat $outputDir/${jobId}intermediateFiles/runStart.txt > $outputDir/${jobId}summary.csv 
+wait
+
+
+cutadapt -j $numT -a TGACCAAGACGCCAAAAACATAAAGAAAGGCCCGGCGCCATTCCGG -a CCGGAATGGCGCCGGGCCTTTCTTTATGTTTTTGGCGTCTTGGTCA -g TTCACTGGAGGGGGCTCACGAGTAAGGAGGATCCAACATG -g CATGTTGGATCCTCCTTACTCGTGAGCCCCCTCCAGTGAA -O 20 $read1 > $outputDir/${jobId}intermediateFiles/R1.cutadapt.fastq 2> $outputDir/${jobId}intermediateFiles/R1.linkers.txt &
+
+cutadapt -j $numT -a TGACCAAGACGCCAAAAACATAAAGAAAGGCCCGGCGCCATTCCGG -a CCGGAATGGCGCCGGGCCTTTCTTTATGTTTTTGGCGTCTTGGTCA -g TTCACTGGAGGGGGCTCACGAGTAAGGAGGATCCAACATG -g CATGTTGGATCCTCCTTACTCGTGAGCCCCCTCCAGTGAA -O 20 $read2 > $outputDir/${jobId}intermediateFiles/R2.cutadapt.fastq 2> $outputDir/${jobId}intermediateFiles/R2.linkers.txt &
+wait
+
+
+python processFastq.py $outputDir/${jobId}intermediateFiles/R1.cutadapt.lengthFiltered.fastq $outputDir/${jobId}intermediateFiles/R1.cutadapt.fastq $outputDir yes ${jobId} 2>> $outputDir/${jobId}errorLog.txt &
+python processFastq.py $outputDir/${jobId}intermediateFiles/R2.cutadapt.lengthFiltered.fastq $outputDir/${jobId}intermediateFiles/R2.cutadapt.fastq $outputDir no ${jobId} 2>> $outputDir/${jobId}errorLog.txt &
+wait
+
+fastp -w $numT -i $outputDir/${jobId}intermediateFiles/R1.cutadapt.lengthFiltered.fastq -I $outputDir/${jobId}intermediateFiles/R2.cutadapt.lengthFiltered.fastq -o $outputDir/${jobId}processedFastq/R1.cutadapt.fastp.fastq -O $outputDir/${jobId}processedFastq/R2.cutadapt.fastp.fastq -h $outputDir/${jobId}intermediateFiles/fastp.html -j $outputDir/${jobId}intermediateFiles/fastp.json 2>> $outputDir/${jobId}errorLog.txt
+wait
+
+python writeNumReadPairs.py $outputDir $jobId 2>> $outputDir/${jobId}errorLog.txt
+wait
+
+mkdir $outputDir/${jobId}alignment/read1_tx
+mkdir $outputDir/${jobId}alignment/read2_tx
+wait
+
+source=$outputDir/${jobId}processedFastq
+target=$outputDir/${jobId}alignment
+wait
+
+half=$((numT/2))
+bwa mem -v 1 -a -t $half $bwaIndex $source/R1.cutadapt.fastp.fastq > $target/read1_tx/alignment.sam 2>> $outputDir/${jobId}errorLog.txt &
+bwa mem -v 1 -a -t $half $bwaIndex $source/R2.cutadapt.fastp.fastq > $target/read2_tx/alignment.sam 2>> $outputDir/${jobId}errorLog.txt &
+wait
+
+samtools view -H $target/read1_tx/alignment.sam > $target/read1_tx/header.sam 2>> $outputDir/${jobId}errorLog.txt &
+samtools view -H $target/read2_tx/alignment.sam > $target/read2_tx/header.sam 2>> $outputDir/${jobId}errorLog.txt &
+wait
+
+samtools view -F 4 $target/read1_tx/alignment.sam | cat $target/read1_tx/header.sam - | samtools view -b - > $target/read1_tx/mapped.bam 2>> $outputDir/${jobId}errorLog.txt &
+samtools view -F 4 $target/read2_tx/alignment.sam | cat $target/read2_tx/header.sam - | samtools view -b - > $target/read2_tx/mapped.bam 2>> $outputDir/${jobId}errorLog.txt &
+wait
+
+
+samtools sort -n -@ $half -o $target/read1_tx/mapped.sorted.bam $target/read1_tx/mapped.bam 2>> $outputDir/${jobId}errorLog.txt &
+samtools sort -n -@ $half -o $target/read2_tx/mapped.sorted.bam $target/read2_tx/mapped.bam 2>> $outputDir/${jobId}errorLog.txt &
+wait
+
+bedtools bamtobed -cigar -i $target/read1_tx/mapped.sorted.bam > $target/read1_tx/mapped.sorted.bed 2>> $outputDir/${jobId}errorLog.txt &
+bedtools bamtobed -cigar -i $target/read2_tx/mapped.sorted.bam > $target/read2_tx/mapped.sorted.bed 2>> $outputDir/${jobId}errorLog.txt &
+wait
+
+python runBedFileSplit.py $target 2>> $outputDir/${jobId}errorLog.txt 
+wait
+
+for file in $target/read1_tx/mapped.sorted.bed_chunk*
+do
+i=${file#*chunk}
+python writeMappedReadPairs.py $outputDir ${i} $geneDic $outputDir/${jobId}intermediateFiles/mappedStats_${i}.txt ${jobId} 2>> $outputDir/${jobId}errorLog.txt 
+done
+wait
+
+cat $outputDir/${jobId}intermediateFiles/mappedReadPairs_all_bwa.header $outputDir/${jobId}intermediateFiles/mappedReadPairs_all_bwa.csv_* > $target/mappedReadPairs.csv
+wait
+
+python runValid_dedup.py $outputDir $jobId $geneDic 2>> $outputDir/${jobId}errorLog.txt
+wait
+
+python callRPAs.py $outputDir $pCutoff $oddsCutoff $rcCutoff $jobId 2>> $outputDir/${jobId}errorLog.txt
+wait
+
+rm $target/read1_tx/mapped.sorted.bed_chunk*
+rm $target/read2_tx/mapped.sorted.bed_chunk*
+wait
+
+if [ $removeFlag == 'T' ]
+then
+    rm -r $outputDir/${jobId}intermediateFiles
+fi
+wait
+
+gzip $outputDir/${jobId}processedFastq/R2.cutadapt.fastp.fastq &
+gzip $outputDir/${jobId}processedFastq/R1.cutadapt.fastp.fastq &
