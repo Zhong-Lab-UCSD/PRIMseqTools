@@ -14,7 +14,7 @@ Protein-RNA Interaction Sequencing (PRIM-seq) is a high-throughput sequencing te
 7. The read pairs passing the quality checks are then deduplicated based on the external coordinates of their primary alignments.
 8. The deduplicated read pairs are identified as chimeric read pairs from the library. Their read ids and alignment infomation of the primary alignment are output in `chimericReadPairs.csv`. 
 9. Chi-square test is applied to the chimeric read pairs. Benjamini-Hochberg adjustment is applied to correct all the p-values. Gene pairs with an adjusted p-value less than 0.05 (default) and with an odds ratio larger than 1 (default) are kept. Gene pairs with mapped chimeric read pair count in the library larger than 4 (default) times the average number of mapped chimeric read pairs per gene pair in the positive library are kept. 
-10. The kept gene pairs are output as protein-protein interactions in `proteinProteinInteractions.csv`.
+10. The kept gene pairs are output as RNA-protein associations in `RNAProteinAssociations.csv`.
 
 
 ## Software Requirements
@@ -69,9 +69,9 @@ properseqTools -a /path/to/read1.fastq
 </code></pre>
 **Other parameters**
 <pre><code>
--d     |Float, odds ratio cutoff used to identify protein-protein interactions, default=1
--p     |Float, false discovery rate cutoff used to identify protein-protein interactions, default=0.05
--c     |Float, read count cutoff coefficient used to identify protein-protein interactions, default=4
+-d     |Float, odds ratio cutoff used to identify RNA-protein associations, default=1
+-p     |Float, false discovery rate cutoff used to identify RNA-protein associations, default=0.05
+-c     |Float, read count cutoff coefficient used to identify RNA-protein associations, default=4
 -j     |String, Job ID to be prepended to the output files and directories, optional, default=PROPERseq"
 -t     |Int, Number of working threads, default=2
 -r     |Char, (T or F), removal of intermediate files or not, default=T
