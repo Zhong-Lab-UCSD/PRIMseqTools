@@ -5,17 +5,19 @@ Protein-RNA Interaction Sequencing (PRIM-seq) is a high-throughput sequencing te
 
 ## Workflow
 ![alt text](https://github.com/Zhong-Lab-UCSD/PRIMseqTools/blob/main/workflow.png)
-1. Raw read pairs from the PROPER-seq experiment are present in `.fastq` files.
-2. Cutadpt is applied to remove 3' linker sequences and 5' adapter sequences from the read pairs. 
-3. Fastp is then applied to remove low-quality reads whose mean quality is lower than Q20 and too short reads whose length is shorter than 20 bp.
+1. Raw read pairs from the PRIM-seq experiment are present in `.fastq` files.
+2. Cutadpt is applied to remove 3' linker sequences and 5' adapter sequences from the read pairs (Adapter trimming). 
+3. Fastp is then applied to remove low-quality reads whose mean quality is lower than Q20 and too short reads whose length is shorter than 20 bp (Quality filtering).
 3. The remaing read pairs are output as pre-processed read pairs in `.fastq` files.
-4. The pre-processed read pairs are mapped to transcriptome with BWA separately. ‘-a’ option is enabled to keep all found alignments using default threshold of BWA. This is used in the later filtering of potential homologous read pairs. 
-5. The mapped read pairs are output in `.csv` file with aligned genes and transcriptome alignment information.
-6. The transcriptome alignment information of mapped read pairs is utilized to select read pairs whose two ends’ primary alignments are mapped to different protein-coding genes. The selected read pairs are further checked to see if both ends have over 50% of their read bases matches the reference transcriptome based on the CIGAR string and if both ends have no shared lesser alignments. 
-7. The read pairs passing the quality checks are then deduplicated based on the external coordinates of their primary alignments.
-8. The deduplicated read pairs are identified as chimeric read pairs from the library. Their read ids and alignment infomation of the primary alignment are output in `chimericReadPairs.csv`. 
-9. Chi-square test is applied to the chimeric read pairs. Benjamini-Hochberg adjustment is applied to correct all the p-values. Gene pairs with an adjusted p-value less than 0.05 (default) and with an odds ratio larger than 1 (default) are kept. Gene pairs with mapped chimeric read pair count in the library larger than 4 (default) times the average number of mapped chimeric read pairs per gene pair in the positive library are kept. 
-10. The kept gene pairs are output as RNA-protein associations in `RNAProteinAssociations.csv`.
+4. The pre-processed read pairs are mapped to transcriptome with BWA separately. ‘-a’ option is enabled to keep all found alignments using default threshold of BWA. This is used in the later filtering of potential homologous read pairs (Mapping). 
+5. The mapped read pairs are output in `.bed` file with aligned genes and transcriptome alignment information.
+6. The transcriptome alignment information of mapped read pairs is utilized to select read pairs whose two ends’ primary alignments are mapped to two different genes (chimeric read pairs identification).
+7. The selected read pairs are further checked to see if both ends have over 50% of their read bases matches the reference transcriptome based on the CIGAR string and if both ends have no shared lesser alignments.
+8. The read pairs passing the quality checks are then deduplicated based on the external coordinates of their primary alignments (Deduplication).
+9. The deduplicated read pairs with one end sensely mapped to a gene and the other end antisensely mapped to a protein-coding gene  were identified as the valid chimeric read pairs from the library (RNA/protein end assignment).
+10. The read ids and alignment infomation of the primary alignment of the valid chimeric read pairs are output in `validChimericReadPairs.csv`. 
+11. Chi-square test is applied to the valid chimeric read pairs. Benjamini-Hochberg adjustment is applied to correct all the p-values. Gene pairs with an adjusted p-value less than 0.05 (default) and with an odds ratio larger than 1 (default) are kept. Gene pairs with mapped chimeric read pair count in the library larger than 4 (default) times the average number of mapped chimeric read pairs per gene pair in the library are kept. 
+12. The kept gene pairs are output as RNA-protein associations in `RNAProteinAssociations.csv`.
 
 
 ## Software Requirements
