@@ -4,6 +4,7 @@
 Protein-RNA Interaction Sequencing (PRIM-seq) is a high-throughput sequencing technology that efficiently maps cell wide RNA-protein associations in vitro. Here, we distribute PRIMseqTools, a standardized data processing pipeline to identify RNA-protein associations from fastq files of PIM-seq experiments.<br />
 
 ## Workflow
+![alt text](https://github.com/Zhong-Lab-UCSD/PRIMseqTools/blob/main/workflow.png)
 1. Raw read pairs from the PROPER-seq experiment are present in `.fastq` files.
 2. Cutadpt is applied to remove 3' linker sequences and 5' adapter sequences from the read pairs. 
 3. Fastp is then applied to remove low-quality reads whose mean quality is lower than Q20 and too short reads whose length is shorter than 20 bp.
