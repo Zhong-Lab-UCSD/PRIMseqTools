@@ -21,11 +21,11 @@ Protein-RNA Interaction Sequencing (PRIM-seq) is a high-throughput sequencing te
 
 
 ## Software Requirements
-- [Cutadapt](https://cutadapt.readthedocs.io/en/stable/) (2.5 or later)
-- [fastp](https://github.com/OpenGene/fastp) (0.14.1 or later)
-- [bwa](https://github.com/lh3/bwa) (0.7.12-r1039 or later)
-- [samtools](http://www.htslib.org/) (1.8 or later)
-- [bedtools](https://bedtools.readthedocs.io/en/latest/) (2.26.0 or later)
+- [Cutadapt](https://cutadapt.readthedocs.io/en/stable/) (4.3 or later)
+- [fastp](https://github.com/OpenGene/fastp) (0.22.0 or later)
+- [bwa](https://github.com/lh3/bwa) (0.7.17-r1188 or later)
+- [samtools](http://www.htslib.org/) (1.6 or later)
+- [bedtools](https://bedtools.readthedocs.io/en/latest/) (2.30.0 or later)
 - Python 3.4 or later, the following python libraries are required:<br />
     - sys
     - collections
