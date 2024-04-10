@@ -52,7 +52,7 @@ You will also need a dictionary file that contains the information of transcript
 
 **To excute PROPERseqTools, run**
 <pre><code>
-primseqTools -a /path/to/read1.fastq
+PRIMseqTools -a /path/to/read1.fastq
              -b /path/to/read2.fastq
              -i /path/to/bwaIndex/transcriptome.fa
              -o /path/to/outputDir
@@ -79,5 +79,19 @@ primseqTools -a /path/to/read1.fastq
 -t     |Int, Number of working threads, default=2
 -r     |Char, (T or F), removal of intermediate files or not, default=T
 -h     |Print usage message" 
+           
+</code></pre>
+
+## PRIMseqTools Output
+A variety of output files are created for each sample as they are run through the pipeline. The highest level of the output directory contains the following files and subdirectories:
+<pre><code>
+RNAProteinInteractions.csv        |a file that contains the identified RNA-protein associations from the sample
+validChimericReadPairs.csv        |a file that contains the read ids of the identified valid chimeric read pairs from the sample
+summary.csv                       |a file that contains the summary statistics of running the sample with PROPERseqTools
+errorLog.txt                      |a file that contains error message from the pipeline if any
+processedFastq/                   |a directory that contains the pre-processed fastq files from the sample
+alignment/mappedReadPairs.csv     |a file that contains the alignment infomation of all mapped read pairs from the sample
+alignment/*/                      |subdirectories that contain the alignment files of the pre-processed fastq files from the sample
+intermediateFiles/                |an optional directory contains all the intermediat files generated from running the pipeline, this direcotry only exists if '-r' option is set to 'F' 
            
 </code></pre>
