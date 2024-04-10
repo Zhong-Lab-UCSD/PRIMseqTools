@@ -46,17 +46,17 @@ You will also need a dictionary file that contains the information of transcript
 ## Usage
 **Installation**
 1. Clone the current github repository to your local machine. For example<br />
-`git clone https://github.com/Zhong-Lab-UCSD/PROPERseqTools`
+`git clone https://github.com/Zhong-Lab-UCSD/PRIMseqTools`
 2. Add the following path of the cloned directory to your `.bashrc` file<br />
 `export PATH=$PATH:/home/path/to/PROPERseqTools/bin`
 
 **To excute PROPERseqTools, run**
 <pre><code>
-properseqTools -a /path/to/read1.fastq
-               -b /path/to/read2.fastq
-               -i /path/to/bwaIndex/transcriptome.fa
-               -o /path/to/outputDir
-               -g /path/to/refSeq_tx_gene_type.csv
+primseqTools -a /path/to/read1.fastq
+             -b /path/to/read2.fastq
+             -i /path/to/bwaIndex/transcriptome.fa
+             -o /path/to/outputDir
+             -g /path/to/refSeq_tx_gene_type.csv
            
 </code></pre>
 
