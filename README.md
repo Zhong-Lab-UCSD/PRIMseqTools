@@ -21,7 +21,7 @@ Protein-RNA Interaction Sequencing (PRIM-seq) is a high-throughput sequencing te
 
 
 ## Software Requirements
-- [Cutadapt](https://cutadapt.readthedocs.io/en/stable/) (4.3 or later)
+- [Cutadapt](https://cutadapt.readthedocs.io/en/stable/) (2.5 or later)
 - [fastp](https://github.com/OpenGene/fastp) (0.22.0 or later)
 - [bwa](https://github.com/lh3/bwa) (0.7.17-r1188 or later)
 - [samtools](http://www.htslib.org/) (1.6 or later)
