@@ -48,7 +48,7 @@ You will also need a dictionary file that contains the information of transcript
 1. Clone the current github repository to your local machine. For example<br />
 `git clone https://github.com/Zhong-Lab-UCSD/PRIMseqTools`
 2. Add the following path of the cloned directory to your `.bashrc` file<br />
-`export PATH=$PATH:/home/path/to/PROPERseqTools/bin`
+`export PATH=$PATH:/home/path/to/PRIMseqTools/bin`
 
 **To excute PROPERseqTools, run**
 <pre><code>
